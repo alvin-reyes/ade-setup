@@ -15,7 +15,8 @@ rules.md            the ADE methodology: Plan → Approve → Shard → Build �
 standards.md        the project's coding standards (the architect fills this in)
 context/            templates for the context store and the decision log
 claude/             the Claude Code projection: CLAUDE.md and .claude/agents/
-bmad/               vendored BMAD-METHOD: bmad-core/ and the /BMad: commands
+bmad/               vendored BMAD-METHOD: tasks, templates, checklists,
+                    workflows and the /BMad:tasks: commands (no personas)
 ade.json            which ADE version produced this
 ```
 
@@ -28,10 +29,25 @@ duplicated here.
 `tools` frontmatter, plus the `CLAUDE.md` constitution. Copy it in when you want
 Claude Code's sub-agent delegation; every other provider reads `agents/`.
 
-`bmad/` is a pinned copy of [BMAD-METHOD](https://github.com/bmad-code-org/BMAD-METHOD)
-— `bmad-core/` and the `/BMad:` slash commands. Nothing is downloaded at setup
-time. The ADE rules always win: a BMAD task can never override the verification
-command, the Definition of Done, or the constitution.
+`bmad/` is a pinned copy of [BMAD-METHOD](https://github.com/bmad-code-org/BMAD-METHOD),
+**with its personas removed**. Nothing is downloaded at setup time.
+
+BMAD ships ten agents — `analyst`, `architect`, `dev`, `pm`, `po`, `qa`, `sm`,
+`ux-expert` and two orchestrators — and eight of those are the same jobs as the
+roles in `agents/`. Two `qa` agents with different definitions of Done is the
+worst kind of duplication: a model can pick the one that bypasses the
+verification command. So there is **one role set here, and it is `agents/`**.
+
+What BMAD is actually valuable for stays: 21 tasks, 13 templates, 6 checklists,
+6 workflows and its reference data, plus the `/BMad:tasks:` slash commands. None
+of them reference an agent by name, so they work unchanged against ADE's roles —
+an ADE role invokes a BMAD task the same way it invokes any other tool.
+
+`agent-teams/` went with the personas: those files are bundles of the agents
+that no longer exist.
+
+The ADE rules still win where they overlap: a BMAD task can never override the
+verification command, the Definition of Done, or the constitution.
 
 The agent files carry **no frontmatter**. Claude Code's `name`/`description`/
 `tools` header is added when ADE projects them into `.claude/agents/`; every

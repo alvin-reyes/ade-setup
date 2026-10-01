@@ -5,5 +5,5 @@
   "rules": "rules.md",
   "standards": "standards.md",
   "claude": "claude/",
-  "bmad": "bmad/"
+  "bmad": "bmad/ (library only; personas merged into agents/)"
 }
