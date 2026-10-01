@@ -10,12 +10,28 @@ at whatever the generator wrote the day the project was created.
 ## What's here
 
 ```
-agents/<name>.md    the eight core roles, provider-neutral Markdown
+agents/<name>.md    14 role definitions, provider-neutral Markdown
 rules.md            the ADE methodology: Plan → Approve → Shard → Build → Verify
 standards.md        the project's coding standards (the architect fills this in)
 context/            templates for the context store and the decision log
+claude/             the Claude Code projection: CLAUDE.md and .claude/agents/
+bmad/               vendored BMAD-METHOD: bmad-core/ and the /BMad: commands
 ade.json            which ADE version produced this
 ```
+
+`agents/` holds the eight methodology roles plus six more the agent picker
+offers — analyst, UX expert, product owner, brainstorming architect, technical
+writer and advisor. The picker's `dev` is the same job as `developer` and is not
+duplicated here.
+
+`claude/` is the same eight roles with Claude Code's `name`/`description`/
+`tools` frontmatter, plus the `CLAUDE.md` constitution. Copy it in when you want
+Claude Code's sub-agent delegation; every other provider reads `agents/`.
+
+`bmad/` is a pinned copy of [BMAD-METHOD](https://github.com/bmad-code-org/BMAD-METHOD)
+— `bmad-core/` and the `/BMad:` slash commands. Nothing is downloaded at setup
+time. The ADE rules always win: a BMAD task can never override the verification
+command, the Definition of Done, or the constitution.
 
 The agent files carry **no frontmatter**. Claude Code's `name`/`description`/
 `tools` header is added when ADE projects them into `.claude/agents/`; every

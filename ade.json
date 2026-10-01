@@ -3,5 +3,7 @@
   "generatedBy": "ADE 0.17.5",
   "agents": "agents/",
   "rules": "rules.md",
-  "standards": "standards.md"
+  "standards": "standards.md",
+  "claude": "claude/",
+  "bmad": "bmad/"
 }
