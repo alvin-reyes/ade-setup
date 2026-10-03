@@ -1,7 +1,7 @@
 {
   "format": 1,
   "generatedBy": "ADE 0.17.5",
-  "agents": "agents/",
+  "agents": "agents/ (19 roles: delivery, security, reliability, release, management, customer-facing)",
   "rules": "rules.md",
   "standards": "standards.md",
   "claude": "claude/",
