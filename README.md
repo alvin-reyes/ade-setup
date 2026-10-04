@@ -86,3 +86,14 @@ Two guarantees hold the methodology together: **a story is Done only when the
 agreed verification command passes**, and **no agent certifies its own work**.
 The adversarial reviewer ships with a read-only tool allowlist so that second
 one is enforced rather than merely requested.
+
+## Licence
+
+MIT — see [LICENSE](LICENSE). Fork these definitions, change them, ship your own
+set; [ADE](https://github.com/alvin-reyes/better-agentic-ide) is MIT too.
+
+These files are the source ADE parses: its role catalog holds no prose of its
+own, and it vendors a pinned copy of this repository. Improve a role here and it
+reaches a project when someone chooses to update it — nothing pulls
+automatically, and a project's own `.ade/knowledge/` is never touched by an
+update.
