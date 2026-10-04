@@ -13,6 +13,9 @@ on:
       - "rules.md"
       - "standards.md"
       - "ade.json"
+  # Cutting the baseline, and re-cutting after a CI-only change that moved no
+  # shipped content but still wants a release.
+  workflow_dispatch:
 
 permissions:
   contents: write
