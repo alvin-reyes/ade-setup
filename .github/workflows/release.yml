@@ -1,0 +1,57 @@
+name: Release
+
+# Tag and release on every push to main that touches shipped content. The
+# version is derived from what changed in agents/ rather than from commit
+# messages: a removal is a major, an addition a minor, an edit a patch.
+on:
+  push:
+    branches: [main]
+    paths:
+      - "agents/**"
+      - "templates/**"
+      - "bmad/**"
+      - "rules.md"
+      - "standards.md"
+      - "ade.json"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # next-release.mjs needs the tag history
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      # Never tag something that would break a consumer.
+      - name: Validate
+        run: node scripts/validate.mjs
+
+      - name: Work out the version
+        id: next
+        run: node scripts/next-release.mjs "$RUNNER_TEMP/notes.md" >> "$GITHUB_OUTPUT"
+
+      - name: Tag
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag -a "${{ steps.next.outputs.version }}" -m "${{ steps.next.outputs.version }}"
+          git push origin "${{ steps.next.outputs.version }}"
+
+      - name: Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${{ steps.next.outputs.version }}" \
+            --title "${{ steps.next.outputs.version }}" \
+            --notes-file "$RUNNER_TEMP/notes.md"

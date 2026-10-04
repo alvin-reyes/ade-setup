@@ -1,0 +1,18 @@
+name: Validate
+
+# Every change to a definition, before it can be released. ADE parses these
+# files directly, so a malformed one is ADE's crash, not this repository's.
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: node scripts/validate.mjs
