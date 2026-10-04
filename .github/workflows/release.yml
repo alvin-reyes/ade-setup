@@ -44,7 +44,14 @@ jobs:
         id: next
         run: node scripts/next-release.mjs "$RUNNER_TEMP/notes.md" >> "$GITHUB_OUTPUT"
 
+      # next-release prints an empty version when nothing shipped since the last
+      # tag, which workflow_dispatch can otherwise turn into an empty release.
+      - name: Nothing to release
+        if: steps.next.outputs.version == ''
+        run: echo "::notice::${{ steps.next.outputs.skip }}"
+
       - name: Tag
+        if: steps.next.outputs.version != ''
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
@@ -52,6 +59,7 @@ jobs:
           git push origin "${{ steps.next.outputs.version }}"
 
       - name: Release
+        if: steps.next.outputs.version != ''
         env:
           GH_TOKEN: ${{ github.token }}
         run: |

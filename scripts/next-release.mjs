@@ -50,6 +50,21 @@ if (!last) {
     else changes.changed.push(name(a));
   }
 
+  // Nothing shipped means nothing to release. The paths filter keeps CI from
+  // firing on a docs-only push, but workflow_dispatch has no filter, and a
+  // version whose notes say nothing teaches whoever reads the tag list to stop
+  // reading it.
+  const CONTENT = ["agents/", "templates/", "bmad/", "rules.md", "standards.md", "ade.json"];
+  const shipped = git("diff", "--name-only", `${last}..HEAD`, "--", ...CONTENT)
+    .split("\n")
+    .filter(Boolean);
+  if (shipped.length === 0) {
+    console.log(`version=`);
+    console.log(`previous=${last}`);
+    console.log(`skip=nothing shipped since ${last}`);
+    process.exit(0);
+  }
+
   const [maj, min, pat] = last.replace(/^v/, "").split(".").map(Number);
   if (changes.removed.length) version = `v${maj + 1}.0.0`;
   else if (changes.added.length) version = `v${maj}.${min + 1}.0`;
