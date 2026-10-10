@@ -66,13 +66,27 @@ for (const file of files) {
   if (dated) fail(file, `contains a dated entry (${dated[0].trim()}) — that belongs in a project's knowledge store`);
 
   // 6. Every BMAD task named here must actually ship, or the agent is sent to
-  //    a /BMad:tasks: command that does not exist.
-  const bmad = section(body, "## BMAD tasks");
-  if (bmad) {
-    if (!bmad.includes(".bmad-core/tasks/"))
-      fail(file, '"## BMAD tasks" gives only the Claude Code command; other providers need the file path');
-    for (const [, task] of bmad.matchAll(/^- `([a-z0-9-]+)`/gm)) {
+  //    a /BMad:tasks: command that does not exist. A role carries one section
+  //    per BMAD version and ADE hands an agent only its project's; v4 tasks
+  //    ship here, v6 skills are vendored by ADE and checked there.
+  const v4 = section(body, "## BMAD tasks (v4)");
+  const v6 = section(body, "## BMAD tasks (v6)");
+  if (/^## BMAD tasks\s*$/m.test(body))
+    fail(file, '"## BMAD tasks" has no version; name it "## BMAD tasks (v4)" or "(v6)"');
+  if (v6 !== null && v4 === null) fail(file, '"## BMAD tasks (v6)" without a "(v4)" section for v4 projects');
+  if (v4) {
+    if (!v4.includes(".bmad-core/tasks/"))
+      fail(file, '"## BMAD tasks (v4)" gives only the Claude Code command; other providers need the file path');
+    for (const [, task] of v4.matchAll(/^- `([a-z0-9-]+)`/gm)) {
       if (!existsSync(join(TASKS, `${task}.md`))) fail(file, `names BMAD task "${task}", which this repo does not ship`);
+    }
+  }
+  if (v6) {
+    // A v6 project has no .bmad-core: a v4 command or path here sends the agent nowhere.
+    if (/\/BMad:tasks:|\.bmad-core\/tasks\//.test(v6))
+      fail(file, '"## BMAD tasks (v6)" points at v4 tasks, which v6 projects do not have');
+    for (const [, skill] of v6.matchAll(/^- `([a-z0-9-]+)`/gm)) {
+      if (!skill.startsWith("bmad")) fail(file, `"## BMAD tasks (v6)" names "${skill}", which is not a BMAD v6 skill`);
     }
   }
 }
