@@ -15,7 +15,7 @@ rules.md            the ADE methodology: Plan → Approve → Shard → Build �
 standards.md        the project's coding standards (the architect fills this in)
 context/            templates for the context store and the decision log
 claude/             the Claude Code projection: CLAUDE.md and .claude/agents/
-bmad/               vendored BMAD-METHOD: tasks, templates, checklists,
+bmad/               vendored BMAD-METHOD v4: tasks, templates, checklists,
                     workflows and the /BMad:tasks: commands (no personas)
 ade.json            which ADE version produced this
 ```
@@ -29,25 +29,79 @@ duplicated here.
 `tools` frontmatter, plus the `CLAUDE.md` constitution. Copy it in when you want
 Claude Code's sub-agent delegation; every other provider reads `agents/`.
 
-`bmad/` is a pinned copy of [BMAD-METHOD](https://github.com/bmad-code-org/BMAD-METHOD),
-**with its personas removed**. Nothing is downloaded at setup time.
+## BMAD: v4 or v6
 
-BMAD ships ten agents — `analyst`, `architect`, `dev`, `pm`, `po`, `qa`, `sm`,
-`ux-expert` and two orchestrators — and eight of those are the same jobs as the
-roles in `agents/`. Two `qa` agents with different definitions of Done is the
-worst kind of duplication: a model can pick the one that bypasses the
-verification command. So there is **one role set here, and it is `agents/`**.
+A project runs on one BMAD version, and `.ade/methodology` names it: `v4` or
+`v6`. Nothing is downloaded at setup time; both are pinned copies of
+[BMAD-METHOD](https://github.com/bmad-code-org/BMAD-METHOD).
 
-What BMAD is actually valuable for stays: 21 tasks, 13 templates, 6 checklists,
-6 workflows and its reference data, plus the `/BMad:tasks:` slash commands. None
-of them reference an agent by name, so they work unchanged against ADE's roles —
-an ADE role invokes a BMAD task the same way it invokes any other tool.
+| | v4 | v6 |
+|---|---|---|
+| Lives in | `.bmad-core/` | `_bmad/`, with the skills in `.claude/skills/` |
+| Run as | the `/BMad:tasks:` slash commands | skills |
+| Work goes to | `docs/` | `_bmad-output/` (or the folder `_bmad/config.toml` names) |
+| QA gates | `docs/qa/gates/` | `.ade/gates/` |
+| Pinned copy | `bmad/` in this repository | ships with ADE |
 
-`agent-teams/` went with the personas: those files are bundles of the agents
-that no longer exist.
+The eight methodology roles in `agents/` each have a `## BMAD tasks (v4)` and a
+`## BMAD tasks (v6)` section, and a project gets the one for its version.
+
+### The choice
+
+ADE asks before it writes anything: **BMAD v6** (the default) or **BMAD v4**.
+The question has to be answered, and the answer is written to
+`.ade/methodology`. A project that already has BMAD keeps its version without
+being asked which to set up: one with a marker follows it, and one with
+`.bmad-core/` and no marker is v4.
+
+### No personas, in either version
+
+BMAD ships its own agents, and eight of them are the same jobs as the roles in
+`agents/`. Two `qa` agents with different definitions of Done is the worst kind
+of duplication: a model can pick the one that bypasses the verification
+command. So there is **one role set here, and it is `agents/`**.
+
+What BMAD is valuable for stays. In v4 that is 21 tasks, 13 templates, 6
+checklists, 6 workflows and its reference data, plus the `/BMad:tasks:` slash
+commands; in v6 it is the skills. None of them reference an agent by name, so
+they work unchanged against ADE's roles: an ADE role invokes a BMAD task the
+same way it invokes any other tool. v4's `agent-teams/` went with the personas:
+those files are bundles of the agents that no longer exist.
 
 The ADE rules still win where they overlap: a BMAD task can never override the
 verification command, the Definition of Done, or the constitution.
+
+### Switching
+
+A project can move to the other version at any time. Nothing is deleted: the
+old version's files move into an archive inside the project, and the other
+version is set up fresh.
+
+| Direction | Moves to the archive |
+|---|---|
+| v4 → v6 | `.bmad-core/`, `.claude/commands/BMad/`, the debug log, `.ade/stage` |
+| v6 → v4 | `_bmad/`, the output folder unless it holds your documents, ADE's BMAD skills in `.claude/skills/`, `.ade/approvals/`, `.ade/gates/` |
+| Both | `.ade/methodology` and the eight core role files in `.claude/agents/` |
+
+The rules, the context store, the journal, `.ade/knowledge/`, `CLAUDE.md` and
+your own skills and agents stay. So does `docs/`: both versions use it, and a
+document moves only when you ask for it.
+
+### The archive
+
+```
+.ade/archive/
+  bmad-v4-2026-10-11/     the version left, and the date (-2 for a second that day)
+    ARCHIVE.md            the journal: what moved, its status, how to go back
+    .bmad-core/           paths mirror the project
+    .claude/commands/BMad/
+    leftovers-v6/         files of the new version that were already there
+```
+
+The archive is read-only history, and `rules.md` says so (section 4): agents
+never treat it as current documents, never write to it, and read it only when a
+person asks about the earlier work. To go back, switch again, or move the paths
+`ARCHIVE.md` lists to their places by hand.
 
 The agent files carry **no frontmatter**. Claude Code's `name`/`description`/
 `tools` header is added when ADE projects them into `.claude/agents/`; every
