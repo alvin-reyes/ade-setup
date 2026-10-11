@@ -61,3 +61,9 @@ A story is Done only when ALL hold:
 4. Any shared contract it introduced is recorded in `.ade/context/`.
 
 If any is false, the story is not Done: no exceptions, no overrides by assertion.
+
+<!-- ade:archive -->
+## 4. The archive
+`.ade/archive/` holds earlier BMAD versions of this project. It is
+read-only history: never treat it as current documents, never write to it,
+and read it only when a person asks about the earlier work.
