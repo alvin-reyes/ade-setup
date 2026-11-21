@@ -41,6 +41,6 @@ The knowledge is the project's, not the machine's. It travels with the repo, so
 a teammate — or you on another machine — starts from what has already been
 learned instead of rediscovering it.
 
-Nothing here is ever copied back into `ade-setup`. That repository holds who the
+Nothing here is ever copied back into `ade-method`. That repository holds who the
 agents are, which is shared by every project; this holds what is true about one
 project, which is shared by none.

@@ -1,4 +1,4 @@
-# ade-setup
+# ade-method
 
 Shared ADE agent configuration: the role definitions and the methodology, in a
 form any provider can read.
@@ -113,7 +113,7 @@ here rather than in `.claude/`.
 Vendor it into a project at a pinned ref, the way `.bmad-core/` is vendored:
 
 ```json
-{ "agentConfig": { "repo": "git@github.com:alvin-reyes/ade-setup.git", "ref": "v1" } }
+{ "agentConfig": { "repo": "git@github.com:better-ade/ade-method.git", "ref": "v1" } }
 ```
 
 A teammate who clones the project gets the agents without needing access to
