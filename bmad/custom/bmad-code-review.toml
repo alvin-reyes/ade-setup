@@ -2,6 +2,6 @@
 [workflow]
 review = "quick"
 persistent_facts = [
-  "Review-lens subagents run on the subagent default model: pass no model to the Agent tool. Triage stays in this session. Use \"opus\" only when the user asks.",
-  "When the change is high risk (rules.md section 3) or the diff has more than 200 changed lines, say so and offer a thorough run; do not start one unasked.",
+  "Quick-review lenses run on the subagent default model (pass no model). Missing risk counts as medium.",
+  "When the change is high risk (rules.md section 3) or the diff has 200 or more changed lines, say so and offer a thorough run on the stronger model; do not start one unasked.",
 ]
