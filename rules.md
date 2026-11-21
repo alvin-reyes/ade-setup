@@ -35,7 +35,8 @@ One review per change: the build's own review step is the code review; don't run
 ## 4. Cost
 - Load only what the task needs: the core roles are always here; specialist roles (frontend, backend, devops, sysadmin…)
   come from ade-agent-registry, and on-demand BMAD skills are installed, only when a task calls for them.
-- One or two agents at a time. The smaller model for routine work and review; code is written by the strongest model.
+- One or two agents at a time. The smaller model for routine work and review. The orchestrator and the builder run on
+  the models the owner picks (any provider); the default is Anthropic Opus 5.5.
 - Keep stories small: about 10 acceptance criteria, each named by its test. Split anything bigger.
 - No status messages for work that is still running.
 
