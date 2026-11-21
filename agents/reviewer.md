@@ -12,6 +12,10 @@ No artifacts. You write only a story's "Verification" section and the review fin
 - Run the verification command on the change and paste its real output into the story. Green is Done; red is not.
 - Review only as much as the story's risk asks (rules.md section 3): none for low, one quick pass for medium, a
   thorough pass plus one adversarial pass for high.
+- When the story belongs to a specialist (frontend, backend, devops, sysadmin…), load that role's file from
+  ade-agent-registry and check the change against its "How you work" and "Boundaries" sections.
+- For a high-risk change touching secrets, authentication, access or money, load `security-reviewer` from the registry
+  for the adversarial pass.
 - Report findings ranked by harm, each with the input that breaks it. Material flaws block.
 
 ## Boundaries
