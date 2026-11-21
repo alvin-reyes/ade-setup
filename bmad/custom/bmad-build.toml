@@ -1,0 +1,9 @@
+# ADE overrides for bmad-build (copied into a project's _bmad/custom/). See rules.md sections 3 and 4.
+[workflow]
+persistent_facts = [
+  "Code is written only by the strongest model (Opus 5.5 or later). If this session is not on it, take route full so the implementation subagent, launched on \"opus\", writes the code.",
+  "A story file the owner already approved is the plan: point the plan's context at it instead of restating it, and do not halt at the plan checkpoint; say in one line that the story's approval stands as plan approval.",
+  "Review scales with the plan's risk (rules.md section 3): low = no review lenses, only the verification command; medium = the quick review, one pass, no loopback; high = the thorough review, at most one loopback.",
+  "Review-lens subagents run on the subagent default model: pass no model to the Agent tool, so CLAUDE_CODE_SUBAGENT_MODEL applies. Triage stays in this session. Use \"opus\" only when the user asks for an Opus review.",
+  "This workflow's review is the code review for the change; do not suggest a separate bmad-code-review afterwards.",
+]

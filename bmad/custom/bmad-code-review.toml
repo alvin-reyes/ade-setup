@@ -1,0 +1,7 @@
+# ADE overrides for bmad-code-review: used only when the owner asks for a review outside bmad-build.
+[workflow]
+review = "quick"
+persistent_facts = [
+  "Review-lens subagents run on the subagent default model: pass no model to the Agent tool. Triage stays in this session. Use \"opus\" only when the user asks.",
+  "When the change is high risk (rules.md section 3) or the diff has more than 200 changed lines, say so and offer a thorough run; do not start one unasked.",
+]

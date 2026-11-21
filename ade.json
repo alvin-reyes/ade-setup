@@ -1,9 +1,19 @@
 {
-  "format": 1,
-  "generatedBy": "ADE 0.17.5",
-  "agents": "agents/ (19 roles: delivery, security, reliability, release, management, customer-facing)",
+  "format": 2,
   "rules": "rules.md",
-  "standards": "standards.md",
-  "claude": "claude/",
-  "bmad": "bmad/ (library only; personas merged into agents/)"
+  "core_roles": [
+    { "name": "product",   "file": "agents/product.md",   "description": "Turns the owner's intent into small, testable stories with a risk level." },
+    { "name": "architect", "file": "agents/architect.md", "description": "Keeps parts consistent: architecture note, ADRs, the verification command." },
+    { "name": "developer", "file": "agents/developer.md", "description": "Implements one story test-first, runs the verification command, stops." },
+    { "name": "reviewer",  "file": "agents/reviewer.md",  "description": "Runs the verification command that decides Done; reviews as deep as the risk asks; read-only." }
+  ],
+  "specialists": "github.com/better-ade/ade-agent-registry (loaded when a task needs one)",
+  "bmad": {
+    "version": "v6, latest upstream main; the skills ship with ADE",
+    "default_skills": ["bmad", "bmad-build", "bmad-ticket", "bmad-review", "bmad-customize"],
+    "on_demand_skills": ["bmad-architecture", "bmad-spec", "bmad-prd", "bmad-ux", "bmad-deep-recon", "bmad-retrospective", "bmad-correct-course", "bmad-brainstorming", "bmad-forge-idea", "bmad-qa-generate-e2e-tests", "bmad-walkthrough", "bmad-toolsmith", "bmad-eval", "bmad-project-context", "bmad-build-auto"],
+    "never": ["bmad-agent-analyst", "bmad-agent-architect", "bmad-agent-dev", "bmad-agent-pm", "bmad-agent-ux-designer", "bmad-party-mode"],
+    "overrides": "bmad/custom/"
+  },
+  "templates": "templates/ (context store, decision log, knowledge, standards)"
 }
