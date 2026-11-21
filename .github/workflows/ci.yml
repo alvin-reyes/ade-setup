@@ -1,0 +1,8 @@
+name: ci
+on:
+  pull_request:
+  push: { branches: [main] }
+jobs:
+  ci:
+    uses: better-ade/.github/.github/workflows/verify.yml@v1
+    with: { command: "node scripts/validate.mjs", runs-on: ubuntu-latest }
