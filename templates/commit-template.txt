@@ -1,0 +1,15 @@
+<type>(<scope>): <summary, imperative, under 72 characters>
+
+Overview: <what changed and why, one or two sentences; the story or ticket>
+
+Implementation: <the approach, key files, decisions; ADR links>
+
+Verification: <command, who ran it, the result (e.g. "bash tests/run.sh: 31/31 ok, exit 0")>
+
+Done:
+- [x] criteria covered by tests
+- [x] verification command green
+- [x] within the story
+- [x] contracts recorded (or: none)
+
+Related: <story id, PR #, issue #, ADR>
