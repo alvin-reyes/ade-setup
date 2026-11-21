@@ -1,115 +1,48 @@
 #!/usr/bin/env node
-/**
- * Validate the agent definitions against the contract ADE parses them with.
- *
- * ADE reads these files directly — `src/data/roles.ts` holds no prose and
- * parses `vendor/ade-setup/agents/*.md` at build time. That makes this
- * repository the source of truth, and it makes a malformed definition ADE's
- * problem: a missing "## What you own" silently parses to no owned globs, and a
- * renamed BMAD task sends a running agent to a command that does not exist.
- *
- * Those checks used to live only in ADE, which meant breakage was found after
- * someone re-vendored. They belong here, before a release exists.
- *
- *   node scripts/validate.mjs
- */
-import { readdirSync, readFileSync, existsSync } from "node:fs";
+// Checks what ADE relies on: ade.json parses and lists the four core roles; each role file has a "# Title", a
+// "## What you own" with glob bullets or "No artifacts", a "## Boundaries", no front matter, and names only BMAD skills
+// that are default or on demand; skill lists don't overlap; every override is for a listed skill; rules and templates
+// exist. Needs Node 18+. Run: node scripts/validate.mjs [root]
+import { readFileSync, existsSync, statSync, readdirSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-
-const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
-const AGENTS = join(ROOT, "agents");
-const TASKS = join(ROOT, "bmad", "bmad-core", "tasks");
-
+const ROOT = process.argv[2] || join(dirname(fileURLToPath(import.meta.url)), "..");
 const problems = [];
-const fail = (file, msg) => problems.push(`${file}: ${msg}`);
-
-/** The body of a "## Heading" section, up to the next heading. */
-function section(body, heading) {
-  const i = body.indexOf(heading);
-  if (i < 0) return null;
-  const rest = body.slice(i + heading.length);
-  const next = rest.search(/^## /m);
-  return next < 0 ? rest : rest.slice(0, next);
-}
-
-const files = readdirSync(AGENTS).filter((f) => f.endsWith(".md")).sort();
-if (files.length === 0) fail("agents/", "no definitions found");
-
-for (const file of files) {
-  const id = file.replace(/\.md$/, "");
-  const body = readFileSync(join(AGENTS, file), "utf8");
-
-  // 1. A title ADE can show in the picker.
-  if (!/^#\s+\S/m.test(body)) fail(file, 'no "# Title" heading');
-
-  // 2. Ownership as data. Prose here parses to an empty `owns` array, so the
-  //    role silently appears to be steward of nothing.
-  const owns = section(body, "## What you own");
-  if (owns === null) fail(file, 'no "## What you own" section');
-  else if (!/^- `[^`]+`\s*$/m.test(owns) && !owns.includes("No artifacts"))
-    fail(file, '"## What you own" has no glob bullets and does not say "No artifacts"');
-
-  // 3. Boundaries, under any of the three headings in use.
-  if (!/^## (Boundaries|Anti-patterns)/m.test(body)) fail(file, "no boundaries section");
-
-  // 4. Its own knowledge file and no other role's. Pointing at another role's
-  //    file would have one agent reading notes written for a different job.
-  const refs = [...new Set(Array.from(body.matchAll(/\.ade\/knowledge\/([a-z-]+)\.md/g), (m) => m[1]))];
-  if (refs.length === 0) fail(file, "does not point at a knowledge file");
-  else if (refs.length > 1 || refs[0] !== id) fail(file, `points at ${refs.join(", ")} instead of its own knowledge file`);
-
-  // 5. No project knowledge in a shared definition. A dated entry is the shape
-  //    a knowledge write takes, so one here means it landed in the wrong file —
-  //    and would ship one project's specifics to every other project.
-  const dated = body.match(/^-?\s*\d{4}-\d{2}-\d{2}\b/m);
-  if (dated) fail(file, `contains a dated entry (${dated[0].trim()}) — that belongs in a project's knowledge store`);
-
-  // 6. Every BMAD task named here must actually ship, or the agent is sent to
-  //    a /BMad:tasks: command that does not exist. A role carries one section
-  //    per BMAD version and ADE hands an agent only its project's; v4 tasks
-  //    ship here, v6 skills are vendored by ADE and checked there.
-  const v4 = section(body, "## BMAD tasks (v4)");
-  const v6 = section(body, "## BMAD tasks (v6)");
-  if (/^## BMAD tasks\s*$/m.test(body))
-    fail(file, '"## BMAD tasks" has no version; name it "## BMAD tasks (v4)" or "(v6)"');
-  if (v6 !== null && v4 === null) fail(file, '"## BMAD tasks (v6)" without a "(v4)" section for v4 projects');
-  if (v4) {
-    if (!v4.includes(".bmad-core/tasks/"))
-      fail(file, '"## BMAD tasks (v4)" gives only the Claude Code command; other providers need the file path');
-    for (const [, task] of v4.matchAll(/^- `([a-z0-9-]+)`/gm)) {
-      if (!existsSync(join(TASKS, `${task}.md`))) fail(file, `names BMAD task "${task}", which this repo does not ship`);
-    }
+const fail = (f, m) => problems.push(`${f}: ${m}`);
+const read = (p) => readFileSync(p, "utf8").replace(/\r\n/g, "\n");
+const section = (b, h) => { const m = b.match(new RegExp(`^${h}[ \\t]*$`, "m")); if (!m) return null; const r = b.slice(m.index + m[0].length); const n = r.search(/^## /m); return n < 0 ? r : r.slice(0, n); };
+let reg = null;
+try { reg = JSON.parse(read(join(ROOT, "ade.json"))); } catch (e) { fail("ade.json", e.message); }
+if (reg && typeof reg === "object") {
+  if (reg.format !== 2) fail("ade.json", "format must be 2");
+  for (const k of [reg.rules, ...(reg.templates || [])]) if (!k || !existsSync(join(ROOT, k))) fail("ade.json", `missing file ${k}`);
+  const b = reg.bmad || {}, seen = new Map();
+  for (const k of ["default_skills", "on_demand_skills", "never", "metadata"]) for (const s of b[k] || []) {
+    if (seen.has(s)) fail("ade.json", `skill ${s} listed in ${seen.get(s)} and ${k}`); seen.set(s, k);
   }
-  if (v6) {
-    // A v6 project has no .bmad-core: a v4 command or path here sends the agent nowhere.
-    if (/\/BMad:tasks:|\.bmad-core\/tasks\//.test(v6))
-      fail(file, '"## BMAD tasks (v6)" points at v4 tasks, which v6 projects do not have');
-    for (const [, skill] of v6.matchAll(/^- `([a-z0-9-]+)`/gm)) {
-      if (!skill.startsWith("bmad")) fail(file, `"## BMAD tasks (v6)" names "${skill}", which is not a BMAD v6 skill`);
+  const usable = (s) => ["default_skills", "on_demand_skills"].includes(seen.get(s));
+  const ov = join(ROOT, b.overrides || "bmad/custom");
+  if (existsSync(ov)) for (const f of readdirSync(ov)) if (f.endsWith(".toml") && !usable(f.slice(0, -5))) fail("bmad/custom", `${f} overrides a skill that is not default or on demand`);
+  if (!reg.specialists?.repo || !reg.specialists?.ref) fail("ade.json", "specialists needs repo and ref");
+  if (!b.ref) fail("ade.json", "bmad.ref missing");
+  const roles = Array.isArray(reg.core_roles) ? reg.core_roles : (fail("ade.json", "core_roles missing"), []);
+  const names = new Set(roles.map((r) => r.name));
+  for (const n of ["product", "architect", "developer", "reviewer"]) if (!names.has(n)) fail("ade.json", `core role ${n} missing`);
+  for (const r of roles) {
+    if (!r.name || !r.description) fail("ade.json", `role ${r.name || "?"} needs name and description`);
+    const p = join(ROOT, r.file || "");
+    if (!r.file || !existsSync(p) || !statSync(p).isFile()) { fail("ade.json", `role ${r.name}: no file ${r.file}`); continue; }
+    const t = read(p);
+    if (t.startsWith("---")) fail(r.file, "has front matter (ADE adds it when it projects the role)");
+    if (!/^# \S/m.test(t)) fail(r.file, 'no "# Title"');
+    const own = section(t, "## What you own");
+    if (own === null) fail(r.file, 'no "## What you own"');
+    else if (!/^- `[^`]+`/m.test(own) && !/No artifacts/.test(own)) fail(r.file, '"## What you own" has no glob bullets and no "No artifacts"');
+    if (section(t, "## Boundaries") === null) fail(r.file, 'no "## Boundaries"');
+    for (const s of (section(t, "## BMAD tasks \\(v6\\)") || "").match(/`(bmad-[a-z0-9-]+)`/g) || []) {
+      const n = s.slice(1, -1); if (!usable(n)) fail(r.file, `names ${n}, which is not a default or on-demand skill`);
     }
   }
 }
-
-// 7. The manifest ADE reads to understand the repository.
-try {
-  const manifest = JSON.parse(readFileSync(join(ROOT, "ade.json"), "utf8"));
-  if (typeof manifest.format !== "number") fail("ade.json", "no numeric format version");
-} catch (err) {
-  fail("ade.json", `unreadable: ${err.message}`);
-}
-
-// 8. The template a project is scaffolded from, and the boundary that keeps the
-//    knowledge store from quietly replacing the context store.
-const tpl = join(ROOT, "templates", "knowledge", "README.md");
-if (!existsSync(tpl)) fail("templates/knowledge/README.md", "missing");
-else if (!readFileSync(tpl, "utf8").includes(".ade/context/"))
-  fail("templates/knowledge/README.md", "does not state the boundary against the context store");
-
-if (problems.length) {
-  console.error(`\n${problems.length} problem${problems.length === 1 ? "" : "s"}:\n`);
-  for (const p of problems) console.error(`  ${p}`);
-  console.error("");
-  process.exit(1);
-}
-console.log(`${files.length} definitions valid`);
+if (problems.length) { console.error(problems.join("\n")); process.exit(1); }
+console.log(`ok: ${reg.core_roles.length} core roles`);

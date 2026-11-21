@@ -1,0 +1,7 @@
+# ADE overrides for bmad-code-review: used only when the owner asks for a review outside bmad-build.
+[workflow]
+review = "quick"
+persistent_facts = [
+  "Quick-review lenses run on the subagent default model (pass no model). Missing risk counts as medium.",
+  "When the change is high risk (rules.md section 3) or the diff has 200 or more changed lines, say so and offer a thorough run on the stronger model; do not start one unasked.",
+]
